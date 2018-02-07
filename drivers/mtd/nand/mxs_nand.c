@@ -25,6 +25,7 @@
 #include <asm/mach-imx/regs-gpmi.h>
 #include <asm/arch/sys_proto.h>
 #include <asm/mach-imx/dma.h>
+#include <asm/mach-imx/mxs-nand.h>
 
 #define	MXS_NAND_DMA_DESCRIPTOR_COUNT		4
 
@@ -149,8 +150,7 @@ static uint32_t mxs_nand_aux_status_offset(void)
 	return (MXS_NAND_METADATA_SIZE + 0x3) & ~0x3;
 }
 
-static inline uint32_t mxs_nand_get_ecc_strength(uint32_t page_data_size,
-						uint32_t page_oob_size)
+uint32_t mxs_nand_get_ecc_strength(u32 page_data_size, uint32_t page_oob_size)
 {
 	int ecc_strength;
 	int max_ecc_strength_supported;
@@ -225,14 +225,14 @@ static inline uint32_t mxs_nand_get_mark_offset(uint32_t page_data_size,
 	return block_mark_bit_offset;
 }
 
-static uint32_t mxs_nand_mark_byte_offset(struct mtd_info *mtd)
+uint32_t mxs_nand_mark_byte_offset(struct mtd_info *mtd)
 {
 	uint32_t ecc_strength;
 	ecc_strength = mxs_nand_get_ecc_strength(mtd->writesize, mtd->oobsize);
 	return mxs_nand_get_mark_offset(mtd->writesize, ecc_strength) >> 3;
 }
 
-static uint32_t mxs_nand_mark_bit_offset(struct mtd_info *mtd)
+uint32_t mxs_nand_mark_bit_offset(struct mtd_info *mtd)
 {
 	uint32_t ecc_strength;
 	ecc_strength = mxs_nand_get_ecc_strength(mtd->writesize, mtd->oobsize);
