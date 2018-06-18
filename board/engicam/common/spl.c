@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0+
 /*
- * Copyright (C) 2016 Amarula Solutions B.V.
- * Copyright (C) 2016 Engicam S.r.l.
+ * Copyright (C) 2018 Amarula Solutions B.V.
+ * Copyright (C) 2018 Engicam S.r.l.
  * Author: Jagan Teki <jagan@amarulasolutions.com>
  */
 
@@ -14,27 +14,10 @@
 
 #include <asm/arch/clock.h>
 #include <asm/arch/crm_regs.h>
-#include <asm/arch/iomux.h>
 #include <asm/arch/mx6-ddr.h>
-#include <asm/arch/mx6-pins.h>
 #include <asm/arch/sys_proto.h>
 
-#include <asm/mach-imx/iomux-v3.h>
 #include <asm/mach-imx/video.h>
-
-#define UART_PAD_CTRL  (PAD_CTL_PKE | PAD_CTL_PUE |             \
-        PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED |               \
-        PAD_CTL_DSE_40ohm   | PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
-
-static iomux_v3_cfg_t const uart_pads[] = {
-#ifdef CONFIG_MX6QDL
-        IOMUX_PADS(PAD_KEY_COL0__UART4_TX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL)),
-        IOMUX_PADS(PAD_KEY_ROW0__UART4_RX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL)),
-#elif CONFIG_MX6UL
-	IOMUX_PADS(PAD_UART1_TX_DATA__UART1_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL)),
-	IOMUX_PADS(PAD_UART1_RX_DATA__UART1_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL)),
-#endif
-};
 
 #ifdef CONFIG_SPL_LOAD_FIT
 int board_fit_config_name_match(const char *name)
@@ -407,6 +390,11 @@ static void spl_dram_init(void)
 	udelay(100);
 }
 
+void spl_board_init(void)
+{
+	preloader_console_init();
+}
+
 void board_init_f(ulong dummy)
 {
 	ccgr_init();
@@ -416,14 +404,8 @@ void board_init_f(ulong dummy)
 
 	gpr_init();
 
-	/* iomux */
-	SETUP_IOMUX_PADS(uart_pads);
-
 	/* setup GP timer */
 	timer_init();
-
-	/* UART clocks enabled and gd valid - init serial console */
-	preloader_console_init();
 
 	/* DDR initialization */
 	spl_dram_init();

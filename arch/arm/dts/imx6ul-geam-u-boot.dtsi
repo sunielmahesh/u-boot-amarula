@@ -5,11 +5,19 @@
 
 #include "imx6ul-u-boot.dtsi"
 
+&uart1 {
+	u-boot,dm-spl;
+};
+
 &usdhc1 {
 	u-boot,dm-spl;
 };
 
 &iomuxc {
+	pinctrl_uart1: uart1grp {
+		u-boot,dm-spl;
+	};
+
 	pinctrl_usdhc1: usdhc1grp {
 		u-boot,dm-spl;
 	};

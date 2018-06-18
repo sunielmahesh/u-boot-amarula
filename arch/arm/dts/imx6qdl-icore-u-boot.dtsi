@@ -5,7 +5,15 @@
 
 #include "imx6qdl-u-boot.dtsi"
 
+&uart4 {
+	u-boot,dm-spl;
+};
+
 &usdhc1 {
+	u-boot,dm-spl;
+};
+
+&pinctrl_uart4 {
 	u-boot,dm-spl;
 };
 
