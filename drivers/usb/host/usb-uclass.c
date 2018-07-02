@@ -158,6 +158,45 @@ int usb_get_max_xfer_size(struct usb_device *udev, size_t *size)
 	return ops->get_max_xfer_size(bus, size);
 }
 
+int __usb_stop(void)
+{
+	struct udevice *bus;
+	struct udevice *rh;
+	struct uclass *uc;
+	struct usb_uclass_priv *uc_priv;
+	int err = 0, ret;
+
+	/* De-activate any devices that have been activated */
+	ret = uclass_get(UCLASS_USB_DEV_GENERIC, &uc);
+	if (ret)
+		return ret;
+
+	uc_priv = uc->priv;
+
+	uclass_foreach_dev(bus, uc) {
+		ret = device_remove(bus, DM_REMOVE_NORMAL);
+		if (ret && !err)
+			err = ret;
+
+		/* Locate root hub device */
+		device_find_first_child(bus, &rh);
+		if (rh) {
+			/*
+			 * All USB devices are children of root hub.
+			 * Unbinding root hub will unbind all of its children.
+			 */
+			ret = device_unbind(rh);
+			if (ret && !err)
+				err = ret;
+		}
+	}
+
+	uc_priv->companion_device_count = 0;
+	usb_started = 0;
+
+	return err;
+}
+
 int usb_stop(void)
 {
 	struct udevice *bus;
@@ -165,6 +204,10 @@ int usb_stop(void)
 	struct uclass *uc;
 	struct usb_uclass_priv *uc_priv;
 	int err = 0, ret;
+
+	ret = __usb_stop();
+	if (ret)
+		return ret;
 
 	/* De-activate any devices that have been activated */
 	ret = uclass_get(UCLASS_USB, &uc);
