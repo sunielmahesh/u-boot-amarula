@@ -134,6 +134,7 @@ config MACH_SUNXI_H3_H5
 	bool
 	select CLK
 	select DM_I2C
+	select DM_MMC if MMC
 	select PHY_SUN4I_USB
 	select SUNXI_DE2
 	select SUNXI_DRAM_DW
