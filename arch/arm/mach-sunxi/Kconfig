@@ -285,6 +285,7 @@ config MACH_SUN50I
 	select ARM64
 	select CLK
 	select DM_I2C
+	select DM_MMC if MMC
 	select PHY_SUN4I_USB
 	select SUNXI_DE2
 	select SUNXI_GEN_SUN6I
