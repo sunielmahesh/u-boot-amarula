@@ -50,6 +50,10 @@ DECLARE_GLOBAL_DATA_PTR;
 #define CONFIG_FEC_XCV_TYPE	PHY_INTERFACE_MODE_MII100
 #endif
 
+#if defined(CONFIG_TARGET_APX4DEVKIT) || defined(CONFIG_TARGET_MX6QARM2)
+# define CONFIG_FEC_MXC_PHY_ADDR	0
+#endif
+
 /*
  * The i.MX28 operates with packets in big endian. We need to swap them before
  * sending and after receiving.
