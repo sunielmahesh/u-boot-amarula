@@ -65,6 +65,8 @@ static int a23_clk_bind(struct udevice *dev)
 static const struct udevice_id a23_clk_ids[] = {
 	{ .compatible = "allwinner,sun8i-a23-ccu",
 	  .data = (ulong)&sun8i_a23_ccu_desc },
+	{ .compatible = "allwinner,sun8i-a33-ccu",
+	  .data = (ulong)&sun8i_a23_ccu_desc },
 	{ }
 };
 
