@@ -14,6 +14,11 @@ static inline struct reset_ops *reset_dev_ops(struct udevice *dev)
 	return (struct reset_ops *)dev->driver->ops;
 }
 
+static int reset_request_default(struct reset_ctl *reset_ctl)
+{
+	return 0;
+}
+
 static int reset_of_xlate_default(struct reset_ctl *reset_ctl,
 				  struct ofnode_phandle_args *args)
 {
@@ -69,7 +74,10 @@ int reset_get_by_index(struct udevice *dev, int index,
 		return ret;
 	}
 
-	ret = ops->request(reset_ctl);
+	if (ops->request)
+		ret = ops->request(reset_ctl);
+	else
+		ret = reset_request_default(reset_ctl);
 	if (ret) {
 		debug("ops->request() failed: %d\n", ret);
 		return ret;
