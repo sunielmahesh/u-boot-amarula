@@ -13,6 +13,9 @@
 #include <dt-bindings/reset/sun8i-v3s-ccu.h>
 
 static struct ccu_clk_map v3s_clks[] = {
+	[CLK_BUS_MMC0]		= { 0x060, BIT(8), NULL },
+	[CLK_BUS_MMC1]		= { 0x060, BIT(9), NULL },
+	[CLK_BUS_MMC2]		= { 0x060, BIT(10), NULL },
 	[CLK_BUS_OTG]		= { 0x060, BIT(24), NULL },
 
 	[CLK_USB_PHY0]          = { 0x0cc, BIT(8), NULL },

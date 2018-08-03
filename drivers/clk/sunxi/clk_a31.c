@@ -13,6 +13,10 @@
 #include <dt-bindings/reset/sun6i-a31-ccu.h>
 
 static struct ccu_clk_map a31_clks[] = {
+	[CLK_AHB1_MMC0]		= { 0x060, BIT(8), NULL },
+	[CLK_AHB1_MMC1]		= { 0x060, BIT(9), NULL },
+	[CLK_AHB1_MMC2]		= { 0x060, BIT(10), NULL },
+	[CLK_AHB1_MMC3]		= { 0x060, BIT(12), NULL },
 	[CLK_AHB1_OTG]		= { 0x060, BIT(24), NULL },
 	[CLK_AHB1_EHCI0]	= { 0x060, BIT(26), NULL },
 	[CLK_AHB1_EHCI1]	= { 0x060, BIT(27), NULL },

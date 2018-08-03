@@ -13,6 +13,9 @@
 #include <dt-bindings/reset/sun8i-a23-a33-ccu.h>
 
 static struct ccu_clk_map a23_clks[] = {
+	[CLK_BUS_MMC0]		= { 0x060, BIT(8), NULL },
+	[CLK_BUS_MMC1]		= { 0x060, BIT(9), NULL },
+	[CLK_BUS_MMC2]		= { 0x060, BIT(10), NULL },
 	[CLK_BUS_OTG]		= { 0x060, BIT(24), NULL },
 	[CLK_BUS_EHCI]		= { 0x060, BIT(26), NULL },
 	[CLK_BUS_OHCI]		= { 0x060, BIT(29), NULL },
