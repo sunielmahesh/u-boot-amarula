@@ -21,14 +21,30 @@ struct ccu_clk_map {
 };
 
 /**
+ * ccu_reset_map - common clock unit reset map
+ *
+ * @off:	ccu reset offset
+ * @bit:	ccu reset bit value
+ */
+struct ccu_reset_map {
+	u16 off;
+	u32 bit;
+};
+
+/**
  * struct ccu_desc - common clock unit descriptor
  *
  * @clks:		mapping clocks descriptor
  * @num_clks:		number of mapped clocks
+ * @resets:		mapping resets descriptor
+ * @num_resets:		number of mapped resets
  */
 struct ccu_desc {
 	struct ccu_clk_map *clks;
 	unsigned long num_clks;
+
+	struct ccu_reset_map *resets;
+	unsigned long num_resets;
 };
 
 /**
@@ -43,5 +59,14 @@ struct sunxi_clk_priv {
 };
 
 extern struct clk_ops sunxi_clk_ops;
+
+/**
+ * sunxi_reset_bind() - reset binding
+ *
+ * @dev:	reset device
+ * @count:	reset count
+ * @return 0 success, or error value
+ */
+int sunxi_reset_bind(struct udevice *dev, ulong count);
 
 #endif /* _ASM_ARCH_CCU_H */
