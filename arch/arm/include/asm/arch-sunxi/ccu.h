@@ -61,6 +61,16 @@ struct sunxi_clk_priv {
 extern struct clk_ops sunxi_clk_ops;
 
 /**
+ * mmc_clk_set_rate - mmc clock set rate
+ *
+ * @base:	clock register base address
+ * @bit:	clock bit value
+ * @rate:	clock input rate in Hz
+ * @return 0, or -ve error code.
+ */
+int mmc_clk_set_rate(void *base, u32 bit, ulong rate);
+
+/**
  * sunxi_reset_bind() - reset binding
  *
  * @dev:	reset device

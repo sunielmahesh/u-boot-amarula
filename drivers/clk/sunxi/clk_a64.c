@@ -22,6 +22,10 @@ static struct ccu_clk_map a64_clks[] = {
 	[CLK_BUS_OHCI0]		= { 0x060, BIT(28), NULL },
 	[CLK_BUS_OHCI1]		= { 0x060, BIT(29), NULL },
 
+	[CLK_MMC0]		= { 0x088, BIT(31), &mmc_clk_set_rate },
+	[CLK_MMC1]		= { 0x08c, BIT(31), &mmc_clk_set_rate },
+	[CLK_MMC2]		= { 0x090, BIT(31), &mmc_clk_set_rate },
+
 	[CLK_USB_PHY0]		= { 0x0cc, BIT(8), NULL },
 	[CLK_USB_PHY1]		= { 0x0cc, BIT(9), NULL },
 	[CLK_USB_HSIC]		= { 0x0cc, BIT(10), NULL },

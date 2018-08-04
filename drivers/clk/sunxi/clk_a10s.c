@@ -20,6 +20,12 @@ static struct ccu_clk_map a10s_clks[] = {
 	[CLK_AHB_MMC1]		= { 0x060, BIT(9), NULL },
 	[CLK_AHB_MMC2]		= { 0x060, BIT(10), NULL },
 
+#ifdef CONFIG_MMC
+	[CLK_MMC0]		= { 0x088, BIT(31), &mmc_clk_set_rate },
+	[CLK_MMC1]		= { 0x08c, BIT(31), &mmc_clk_set_rate },
+	[CLK_MMC2]		= { 0x090, BIT(31), &mmc_clk_set_rate },
+#endif
+
 	[CLK_USB_OHCI]		= { 0x0cc, BIT(6), NULL },
 	[CLK_USB_PHY0]		= { 0x0cc, BIT(8), NULL },
 	[CLK_USB_PHY1]		= { 0x0cc, BIT(9), NULL },

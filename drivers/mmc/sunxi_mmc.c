@@ -13,6 +13,7 @@
 #include <malloc.h>
 #include <mmc.h>
 #include <asm/io.h>
+#include <asm/arch/ccu.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/cpu.h>
 #include <asm/arch/gpio.h>
@@ -33,6 +34,8 @@ struct sunxi_mmc_priv {
 	struct sunxi_mmc *reg;
 	struct mmc_config cfg;
 };
+
+bool new_mode;
 
 #if !CONFIG_IS_ENABLED(DM_MMC)
 /* support 4 mmc hosts */
@@ -95,23 +98,19 @@ static int mmc_resource_init(int sdc_no)
 }
 #endif
 
-static int mmc_set_mod_clk(struct sunxi_mmc_priv *priv, unsigned int hz)
+int mmc_clk_set_rate(void *base, u32 bit, ulong rate)
 {
 	unsigned int pll, pll_hz, div, n, oclk_dly, sclk_dly;
-	bool new_mode = false;
 	u32 val = 0;
-
-	if (IS_ENABLED(CONFIG_MMC_SUNXI_HAS_NEW_MODE) && (priv->mmc_no == 2))
-		new_mode = true;
 
 	/*
 	 * The MMC clock has an extra /2 post-divider when operating in the new
 	 * mode.
 	 */
 	if (new_mode)
-		hz = hz * 2;
+		rate = rate * 2;
 
-	if (hz <= 24000000) {
+	if (rate <= 24000000) {
 		pll = CCM_MMC_CTRL_OSCM24;
 		pll_hz = 24000000;
 	} else {
@@ -127,8 +126,8 @@ static int mmc_set_mod_clk(struct sunxi_mmc_priv *priv, unsigned int hz)
 #endif
 	}
 
-	div = pll_hz / hz;
-	if (pll_hz % hz)
+	div = pll_hz / rate;
+	if (pll_hz % rate)
 		div++;
 
 	n = 0;
@@ -138,32 +137,31 @@ static int mmc_set_mod_clk(struct sunxi_mmc_priv *priv, unsigned int hz)
 	}
 
 	if (n > 3) {
-		printf("mmc %u error cannot set clock to %u\n", priv->mmc_no,
-		       hz);
+		printf("mmc error cannot set clock to %ld\n", rate);
 		return -1;
 	}
 
 	/* determine delays */
-	if (hz <= 400000) {
+	if (rate <= 400000) {
 		oclk_dly = 0;
 		sclk_dly = 0;
-	} else if (hz <= 25000000) {
+	} else if (rate <= 25000000) {
 		oclk_dly = 0;
 		sclk_dly = 5;
 #ifdef CONFIG_MACH_SUN9I
-	} else if (hz <= 52000000) {
+	} else if (rate <= 52000000) {
 		oclk_dly = 5;
 		sclk_dly = 4;
 	} else {
-		/* hz > 52000000 */
+		/* rate > 52000000 */
 		oclk_dly = 2;
 		sclk_dly = 4;
 #else
-	} else if (hz <= 52000000) {
+	} else if (rate <= 52000000) {
 		oclk_dly = 3;
 		sclk_dly = 4;
 	} else {
-		/* hz > 52000000 */
+		/* rate > 52000000 */
 		oclk_dly = 1;
 		sclk_dly = 4;
 #endif
@@ -172,20 +170,33 @@ static int mmc_set_mod_clk(struct sunxi_mmc_priv *priv, unsigned int hz)
 	if (new_mode) {
 #ifdef CONFIG_MMC_SUNXI_HAS_NEW_MODE
 		val = CCM_MMC_CTRL_MODE_SEL_NEW;
-		setbits_le32(&priv->reg->ntsr, SUNXI_MMC_NTSR_MODE_SEL_NEW);
 #endif
 	} else {
 		val = CCM_MMC_CTRL_OCLK_DLY(oclk_dly) |
 			CCM_MMC_CTRL_SCLK_DLY(sclk_dly);
 	}
 
-	writel(CCM_MMC_CTRL_ENABLE| pll | CCM_MMC_CTRL_N(n) |
-	       CCM_MMC_CTRL_M(div) | val, priv->mclkreg);
+	writel(bit | pll | CCM_MMC_CTRL_N(n) |
+	       CCM_MMC_CTRL_M(div) | val, base);
 
-	debug("mmc %u set mod-clk req %u parent %u n %u m %u rate %u\n",
-	      priv->mmc_no, hz, pll_hz, 1u << n, div, pll_hz / (1u << n) / div);
+	debug("mmc set mod-clk req %ld parent %u n %u m %u rate %u\n",
+	      rate, pll_hz, 1u << n, div, pll_hz / (1u << n) / div);
 
 	return 0;
+}
+
+static int mmc_set_mod_clk(struct sunxi_mmc_priv *priv, unsigned int hz)
+{
+#if CONFIG_IS_ENABLED(DM_MMC) && CONFIG_IS_ENABLED(CLK)
+#else
+	if (IS_ENABLED(CONFIG_MMC_SUNXI_HAS_NEW_MODE) && (priv->mmc_no == 2))
+		new_mode = true;
+
+	if (new_mode)
+		setbits_le32(&priv->reg->ntsr, SUNXI_MMC_NTSR_MODE_SEL_NEW);
+
+	return mmc_clk_set_rate(priv->mclkreg, CCM_MMC_CTRL_ENABLE, hz);
+#endif
 }
 
 static int mmc_update_clk(struct sunxi_mmc_priv *priv)
@@ -598,6 +609,9 @@ static int sunxi_mmc_probe(struct udevice *dev)
 
 	cfg->f_min = 400000;
 	cfg->f_max = 52000000;
+
+	if (device_is_compatible(dev, "allwinner,sun8i-a83t-emmc"))
+		new_mode = true;
 
 	priv->reg = (void *)dev_read_addr(dev);
 
