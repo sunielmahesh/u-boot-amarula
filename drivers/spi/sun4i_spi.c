@@ -19,6 +19,7 @@
  */
 
 #include <common.h>
+#include <clk.h>
 #include <dm.h>
 #include <spi.h>
 #include <errno.h>
@@ -238,13 +239,36 @@ static int sun4i_spi_parse_pins(struct udevice *dev)
 	return 0;
 }
 
-static inline void sun4i_spi_enable_clock(void)
+static inline int sun4i_spi_enable_clock(struct udevice *dev)
 {
-	struct sunxi_ccm_reg *const ccm =
-		(struct sunxi_ccm_reg *const)SUNXI_CCM_BASE;
+	struct clk ahb_clk, mod_clk;
+	int ret;
 
-	setbits_le32(&ccm->ahb_gate0, (1 << AHB_GATE_OFFSET_SPI0));
-	writel((1 << 31), &ccm->spi0_clk_cfg);
+	ret = clk_get_by_name(dev, "ahb", &ahb_clk);
+	if (ret) {
+		dev_err(dev, "falied to get ahb clock\n");
+		return ret;
+	}
+
+	ret = clk_get_by_name(dev, "mod", &mod_clk);
+	if (ret) {
+		dev_err(dev, "falied to get mod clock\n");
+		return ret;
+	}
+
+	ret = clk_enable(&ahb_clk);
+	if (ret) {
+		dev_err(dev, "failed to enable ahb clock\n");
+		return ret;
+	}
+
+	ret = clk_enable(&mod_clk);
+	if (ret) {
+		dev_err(dev, "failed to enable mod clock\n");
+		return ret;
+	}
+
+	return 0;
 }
 
 static int sun4i_spi_ofdata_to_platdata(struct udevice *bus)
@@ -267,8 +291,12 @@ static int sun4i_spi_probe(struct udevice *bus)
 {
 	struct sun4i_spi_platdata *plat = dev_get_platdata(bus);
 	struct sun4i_spi_priv *priv = dev_get_priv(bus);
+	int ret;
 
-	sun4i_spi_enable_clock();
+	ret = sun4i_spi_enable_clock(bus);
+	if (ret)
+		return ret;
+
 	sun4i_spi_parse_pins(bus);
 
 	priv->regs = (struct sun4i_spi_regs *)(uintptr_t)plat->base_addr;
