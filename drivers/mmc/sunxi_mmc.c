@@ -8,10 +8,12 @@
  */
 
 #include <common.h>
+#include <clk.h>
 #include <dm.h>
 #include <errno.h>
 #include <malloc.h>
 #include <mmc.h>
+#include <reset.h>
 #include <asm/io.h>
 #include <asm/arch/ccu.h>
 #include <asm/arch/clock.h>
@@ -26,8 +28,12 @@ struct sunxi_mmc_plat {
 };
 
 struct sunxi_mmc_priv {
+#if CONFIG_IS_ENABLED(DM_MMC) && CONFIG_IS_ENABLED(CLK)
+	struct clk mmc_clk;
+#else
 	unsigned mmc_no;
 	uint32_t *mclkreg;
+#endif
 	unsigned fatal_err;
 	struct gpio_desc cd_gpio;	/* Change Detect GPIO */
 	int cd_inverted;		/* Inverted Card Detect */
@@ -188,6 +194,15 @@ int mmc_clk_set_rate(void *base, u32 bit, ulong rate)
 static int mmc_set_mod_clk(struct sunxi_mmc_priv *priv, unsigned int hz)
 {
 #if CONFIG_IS_ENABLED(DM_MMC) && CONFIG_IS_ENABLED(CLK)
+	int ret;
+
+	ret = clk_set_rate(&priv->mmc_clk, hz);
+	if (ret) {
+		dev_err(dev, "failed to set rate for mmc_clk\n");
+		return ret;
+	}
+
+	return ret;
 #else
 	if (IS_ENABLED(CONFIG_MMC_SUNXI_HAS_NEW_MODE) && (priv->mmc_no == 2))
 		new_mode = true;
@@ -379,7 +394,7 @@ static int sunxi_mmc_send_cmd_common(struct sunxi_mmc_priv *priv,
 		writel(data->blocks * data->blocksize, &priv->reg->bytecnt);
 	}
 
-	debug("mmc %d, cmd %d(0x%08x), arg 0x%08x\n", priv->mmc_no,
+	debug("mmc cmd %d(0x%08x), arg 0x%08x\n",
 	      cmd->cmdidx, cmdval | cmd->cmdidx, cmd->cmdarg);
 	writel(cmd->cmdarg, &priv->reg->arg);
 
@@ -591,8 +606,8 @@ static int sunxi_mmc_probe(struct udevice *dev)
 	struct sunxi_mmc_plat *plat = dev_get_platdata(dev);
 	struct sunxi_mmc_priv *priv = dev_get_priv(dev);
 	struct mmc_config *cfg = &plat->cfg;
-	struct ofnode_phandle_args args;
-	u32 *gate_reg;
+	struct clk ahb_clk;
+	struct reset_ctl reset;
 	int bus_width, ret;
 
 	cfg->name = dev->name;
@@ -615,20 +630,37 @@ static int sunxi_mmc_probe(struct udevice *dev)
 
 	priv->reg = (void *)dev_read_addr(dev);
 
-	/* We don't have a sunxi clock driver so find the clock address here */
-	ret = dev_read_phandle_with_args(dev, "clocks", "#clock-cells", 0,
-					  1, &args);
-	if (ret)
+	ret = clk_get_by_name(dev, "ahb", &ahb_clk);
+	if (ret) {
+		dev_err(dev, "falied to get ahb clock\n");
 		return ret;
-	priv->mclkreg = (u32 *)ofnode_get_addr(args.node);
+	}
 
-	ret = dev_read_phandle_with_args(dev, "clocks", "#clock-cells", 0,
-					  0, &args);
-	if (ret)
+	ret = clk_get_by_name(dev, "mmc", &priv->mmc_clk);
+	if (ret) {
+		dev_err(dev, "falied to get mmc clock\n");
 		return ret;
-	gate_reg = (u32 *)ofnode_get_addr(args.node);
-	setbits_le32(gate_reg, 1 << args.args[0]);
-	priv->mmc_no = args.args[0] - 8;
+	}
+
+	ret = reset_get_by_name_optional(dev, "ahb", &reset, true);
+	if (ret) {
+		dev_err(dev, "falied to get ahb reset\n");
+		return ret;
+	}
+
+	ret = clk_enable(&ahb_clk);
+	if (ret) {
+		dev_err(dev, "failed to enable ahb clock\n");
+		return ret;
+	}
+
+	if (reset_valid(&reset)) {
+		ret = reset_deassert(&reset);
+		if (ret) {
+			dev_err(dev, "failed to deassert ahb reset\n");
+			return ret;
+		}
+	}
 
 	ret = mmc_set_mod_clk(priv, 24000000);
 	if (ret)
