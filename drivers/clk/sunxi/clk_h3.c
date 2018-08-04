@@ -46,6 +46,9 @@ static struct ccu_reset_map h3_resets[] = {
 	[RST_USB_PHY2]		=  { 0x0cc, BIT(2) },
 	[RST_USB_PHY3]		=  { 0x0cc, BIT(3) },
 
+	[RST_BUS_MMC0]		=  { 0x2c0, BIT(8) },
+	[RST_BUS_MMC1]		=  { 0x2c0, BIT(9) },
+	[RST_BUS_MMC2]		=  { 0x2c0, BIT(10) },
 	[RST_BUS_OTG]		=  { 0x2c0, BIT(23) },
 	[RST_BUS_EHCI0]		=  { 0x2c0, BIT(24) },
 	[RST_BUS_EHCI1]		=  { 0x2c0, BIT(25) },

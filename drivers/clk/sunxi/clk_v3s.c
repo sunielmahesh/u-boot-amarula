@@ -28,6 +28,9 @@ static struct ccu_clk_map v3s_clks[] = {
 static struct ccu_reset_map v3s_resets[] = {
 	[RST_USB_PHY0]		=  { 0x0cc, BIT(0) },
 
+	[RST_BUS_MMC0]		=  { 0x2c0, BIT(8) },
+	[RST_BUS_MMC1]		=  { 0x2c0, BIT(9) },
+	[RST_BUS_MMC2]		=  { 0x2c0, BIT(10) },
 	[RST_BUS_OTG]		=  { 0x2c0, BIT(24) },
 };
 

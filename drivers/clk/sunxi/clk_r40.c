@@ -43,6 +43,10 @@ static struct ccu_reset_map r40_resets[] = {
 	[RST_USB_PHY1]		= { 0x0cc, BIT(1) },
 	[RST_USB_PHY2]		= { 0x0cc, BIT(2) },
 
+	[RST_BUS_MMC0]		= { 0x2c0, BIT(8) },
+	[RST_BUS_MMC1]		= { 0x2c0, BIT(9) },
+	[RST_BUS_MMC2]		= { 0x2c0, BIT(10) },
+	[RST_BUS_MMC3]		= { 0x2c0, BIT(11) },
 	[RST_BUS_OTG]		= { 0x2c0, BIT(25) },
 	[RST_BUS_EHCI0]		= { 0x2c0, BIT(26) },
 	[RST_BUS_EHCI1]		= { 0x2c0, BIT(27) },

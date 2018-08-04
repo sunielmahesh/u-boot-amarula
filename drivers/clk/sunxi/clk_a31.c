@@ -42,6 +42,10 @@ static struct ccu_reset_map a31_resets[] = {
 	[RST_USB_PHY1]		= { 0x0cc, BIT(1) },
 	[RST_USB_PHY2]		= { 0x0cc, BIT(2) },
 
+	[RST_AHB1_MMC0]		= { 0x2c0, BIT(8) },
+	[RST_AHB1_MMC1]		= { 0x2c0, BIT(9) },
+	[RST_AHB1_MMC2]		= { 0x2c0, BIT(10) },
+	[RST_AHB1_MMC3]		= { 0x2c0, BIT(11) },
 	[RST_AHB1_OTG]		= { 0x2c0, BIT(24) },
 	[RST_AHB1_EHCI0]	= { 0x2c0, BIT(26) },
 	[RST_AHB1_EHCI1]	= { 0x2c0, BIT(27) },
