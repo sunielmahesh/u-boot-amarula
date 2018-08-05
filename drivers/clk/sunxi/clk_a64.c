@@ -16,6 +16,8 @@ static struct ccu_clk_map a64_clks[] = {
 	[CLK_BUS_MMC0]		= { 0x060, BIT(8), NULL },
 	[CLK_BUS_MMC1]		= { 0x060, BIT(9), NULL },
 	[CLK_BUS_MMC2]		= { 0x060, BIT(10), NULL },
+	[CLK_BUS_SPI0]		= { 0x060, BIT(20), NULL },
+	[CLK_BUS_SPI1]		= { 0x060, BIT(21), NULL },
 	[CLK_BUS_OTG]		= { 0x060, BIT(23), NULL },
 	[CLK_BUS_EHCI0]		= { 0x060, BIT(24), NULL },
 	[CLK_BUS_EHCI1]		= { 0x060, BIT(25), NULL },
@@ -25,6 +27,9 @@ static struct ccu_clk_map a64_clks[] = {
 	[CLK_MMC0]		= { 0x088, BIT(31), &mmc_clk_set_rate },
 	[CLK_MMC1]		= { 0x08c, BIT(31), &mmc_clk_set_rate },
 	[CLK_MMC2]		= { 0x090, BIT(31), &mmc_clk_set_rate },
+
+	[CLK_SPI0]		= { 0x0a0, BIT(31), NULL },
+	[CLK_SPI1]		= { 0x0a4, BIT(31), NULL },
 
 	[CLK_USB_PHY0]		= { 0x0cc, BIT(8), NULL },
 	[CLK_USB_PHY1]		= { 0x0cc, BIT(9), NULL },

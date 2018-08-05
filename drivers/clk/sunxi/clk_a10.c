@@ -22,11 +22,20 @@ static struct ccu_clk_map a10_clks[] = {
 	[CLK_AHB_MMC1]		= { 0x060, BIT(9), NULL },
 	[CLK_AHB_MMC2]		= { 0x060, BIT(10), NULL },
 	[CLK_AHB_MMC3]		= { 0x060, BIT(11), NULL },
+	[CLK_AHB_SPI0]		= { 0x060, BIT(20), NULL },
+	[CLK_AHB_SPI1]		= { 0x060, BIT(21), NULL },
+	[CLK_AHB_SPI2]		= { 0x060, BIT(22), NULL },
+	[CLK_AHB_SPI3]		= { 0x060, BIT(23), NULL },
 
 	[CLK_MMC0]		= { 0x088, BIT(31), &mmc_clk_set_rate },
 	[CLK_MMC1]		= { 0x08c, BIT(31), &mmc_clk_set_rate },
 	[CLK_MMC2]		= { 0x090, BIT(31), &mmc_clk_set_rate },
 	[CLK_MMC3]		= { 0x094, BIT(31), &mmc_clk_set_rate },
+
+	[CLK_SPI0]		= { 0x0a0, BIT(31), NULL },
+	[CLK_SPI1]		= { 0x0a4, BIT(31), NULL },
+	[CLK_SPI2]		= { 0x0a8, BIT(31), NULL },
+	[CLK_SPI3]		= { 0x0d4, BIT(31), NULL },
 
 	[CLK_USB_OHCI0]		= { 0x0cc, BIT(6), NULL },
 	[CLK_USB_OHCI1]		= { 0x0cc, BIT(7), NULL },

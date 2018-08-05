@@ -17,6 +17,10 @@ static struct ccu_clk_map a31_clks[] = {
 	[CLK_AHB1_MMC1]		= { 0x060, BIT(9), NULL },
 	[CLK_AHB1_MMC2]		= { 0x060, BIT(10), NULL },
 	[CLK_AHB1_MMC3]		= { 0x060, BIT(12), NULL },
+	[CLK_AHB1_SPI0]		= { 0x060, BIT(20), NULL },
+	[CLK_AHB1_SPI1]		= { 0x060, BIT(21), NULL },
+	[CLK_AHB1_SPI2]		= { 0x060, BIT(22), NULL },
+	[CLK_AHB1_SPI3]		= { 0x060, BIT(23), NULL },
 	[CLK_AHB1_OTG]		= { 0x060, BIT(24), NULL },
 	[CLK_AHB1_EHCI0]	= { 0x060, BIT(26), NULL },
 	[CLK_AHB1_EHCI1]	= { 0x060, BIT(27), NULL },
@@ -28,6 +32,11 @@ static struct ccu_clk_map a31_clks[] = {
 	[CLK_MMC1]		= { 0x08c, BIT(31), &mmc_clk_set_rate },
 	[CLK_MMC2]		= { 0x090, BIT(31), &mmc_clk_set_rate },
 	[CLK_MMC3]		= { 0x094, BIT(31), &mmc_clk_set_rate },
+
+	[CLK_SPI0]		= { 0x0a0, BIT(31), NULL },
+	[CLK_SPI1]		= { 0x0a4, BIT(31), NULL },
+	[CLK_SPI2]		= { 0x0a8, BIT(31), NULL },
+	[CLK_SPI3]		= { 0x0ac, BIT(31), NULL },
 
 	[CLK_USB_PHY0]		= { 0x0cc, BIT(8), NULL },
 	[CLK_USB_PHY1]		= { 0x0cc, BIT(9), NULL },
