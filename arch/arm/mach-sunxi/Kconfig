@@ -164,6 +164,7 @@ config MACH_SUN5I
 	select CLK
 	select ARM_CORTEX_CPU_IS_UP
 	select DRAM_SUN4I
+	select DM_MMC if MMC
 	select PHY_SUN4I_USB
 	select SUNXI_GEN_SUN4I
 	select SUPPORT_SPL
@@ -177,6 +178,7 @@ config MACH_SUN6I
 	select ARCH_SUPPORT_PSCI
 	select CLK
 	select DRAM_SUN6I
+	select DM_MMC if MMC
 	select PHY_SUN4I_USB
 	select SUN6I_P2WI
 	select SUN6I_PRCM
