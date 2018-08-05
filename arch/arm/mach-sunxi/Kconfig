@@ -207,6 +207,7 @@ config MACH_SUN8I_A23
 	select CPU_V7_HAS_VIRT
 	select ARCH_SUPPORT_PSCI
 	select CLK
+	select DM_MMC if MMC
 	select DRAM_SUN8I_A23
 	select PHY_SUN4I_USB
 	select SUNXI_GEN_SUN6I
@@ -221,6 +222,7 @@ config MACH_SUN8I_A33
 	select CPU_V7_HAS_VIRT
 	select ARCH_SUPPORT_PSCI
 	select CLK
+	select DM_MMC if MMC
 	select DRAM_SUN8I_A33
 	select PHY_SUN4I_USB
 	select SUNXI_GEN_SUN6I
@@ -269,6 +271,7 @@ config MACH_SUN8I_V3S
 	select CPU_V7_HAS_VIRT
 	select ARCH_SUPPORT_PSCI
 	select CLK
+	select DM_MMC if MMC
 	select SUNXI_GEN_SUN6I
 	select SUNXI_DRAM_DW
 	select SUNXI_DRAM_DW_16BIT
