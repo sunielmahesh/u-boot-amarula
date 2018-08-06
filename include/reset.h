@@ -133,6 +133,23 @@ int reset_get_by_name(struct udevice *dev, const char *name,
 		      struct reset_ctl *reset_ctl);
 
 /**
+ * reset_get_by_name_optional - Get/request a reset signal by name optionally.
+ *
+ * This look up and requests a reset signal similar to reset_get_by_name()
+ * but with optional flag.
+ *
+ * @dev:	The client device.
+ * @name:	The name of the reset signal to request, within the client's
+ *		list of reset signals.
+ * @reset_ctl:	A pointer to a reset control struct to initialize.
+ * @optional:	Optional flag, true if reset is optional, false if reset is
+ *		necessary which is same as reset_get_by_name()
+ * @return 0 if OK, or a negative error code.
+ */
+int reset_get_by_name_optional(struct udevice *dev, const char *name,
+			       struct reset_ctl *reset_ctl, bool optional);
+
+/**
  * reset_request - Request a reset signal.
  *
  * @reset_ctl:	A reset control struct.
@@ -250,6 +267,14 @@ static inline int reset_get_bulk(struct udevice *dev,
 
 static inline int reset_get_by_name(struct udevice *dev, const char *name,
 				    struct reset_ctl *reset_ctl)
+{
+	return -ENOTSUPP;
+}
+
+static inline int reset_get_by_name_optional(struct udevice *dev,
+					     const char *name,
+					     struct reset_ctl *reset_ctl,
+					     bool optional)
 {
 	return -ENOTSUPP;
 }

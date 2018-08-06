@@ -138,6 +138,23 @@ int reset_get_by_name(struct udevice *dev, const char *name,
 	return reset_get_by_index(dev, index, reset_ctl);
 }
 
+int reset_get_by_name_optional(struct udevice *dev, const char *name,
+			       struct reset_ctl *reset_ctl, bool optional)
+{
+	int index;
+
+	debug("%s(dev=%p, name=%s, reset_ctl=%p)\n", __func__, dev, name,
+	      reset_ctl);
+	reset_ctl->dev = NULL;
+
+	index = dev_read_stringlist_search(dev, "reset-names", name);
+	if (index < 0) {
+		printf("reset_get_by_name_optional: optional = %d, index = %d\n", optional, index);
+		return optional ? 0 : index;
+	}
+
+	return reset_get_by_index(dev, index, reset_ctl);
+}
 int reset_request(struct reset_ctl *reset_ctl)
 {
 	struct reset_ops *ops = reset_dev_ops(reset_ctl->dev);
