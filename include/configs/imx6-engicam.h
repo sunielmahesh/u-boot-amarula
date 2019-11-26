@@ -64,6 +64,8 @@
 
 /* Default environment */
 #define CONFIG_EXTRA_ENV_SETTINGS \
+	"boot_syslinux_conf_type=" __stringify(CONFIG_SYSLINUX_CONF_TYPE) "\0" \
+	"upgrade_available=0\0" \
 	MEM_LAYOUT_ENV_SETTINGS \
 	BOOTENV \
 	"script=boot.scr\0" \
@@ -78,9 +80,7 @@
 	"ubiargs=setenv bootargs console=${console},${baudrate} " \
 		"ubi.mtd=5 root=${nandroot} ${mtdparts}\0" \
 	NAND_BOOTCMD \
-	"altbootcmd=" \
-		"setenv boot_syslinux_conf extlinux-rollback/extlinux-rollback.conf;" \
-		"run distro_bootcmd\0"
+	"altbootcmd=run distro_bootcmd\0"
 #endif
 
 /* Miscellaneous configurable options */

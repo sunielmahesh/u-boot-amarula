@@ -9,4 +9,24 @@ config SYS_VENDOR
 config SYS_CONFIG_NAME
 	default "imx6-engicam"
 
+config BOARD_SPECIFIC_OPTIONS
+	bool "Board specific options"
+
+config SYSLINUX_CONF_TYPE
+	int "Support SWU for i.CoreM6"
+	default 0
+	help
+	  Boot syslinux conf type varies based on the usage
+	  of swupdate on i.CoreM6 boards.
+
+	  With swupdate the i.CoreM6 board following A/B type
+	  upgrade scheme. So, here are the type values.
+
+	  0: Default boot syslinux
+	  1: For redundent boot syslinux
+	  2: Boot syslinux for partition A type
+	  3: Boot syslinux for partition B type
+
+	  If board support swupdate on the system, this value
+	  would be 2.
 endif

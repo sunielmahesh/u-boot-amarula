@@ -60,6 +60,107 @@ static void setenv_fdt_file(void)
 		env_set("fdt_file", "imx6ul-isiot-nand.dtb");
 }
 
+#ifdef CONFIG_BOARD_SPECIFIC_OPTIONS
+
+/**
+ * Boot syslinux conf types
+ *
+ * SYSLINUX_CONF_DEFAULT	: Default boot syslinux
+ * SYSLINUX_CONF_ROLLBACK	: For redundent boot syslinux
+ * SYSLINUX_CONF_A		: Boot syslinux for partition A type
+ * SYSLINUX_CONF_B		: Boot syslinux for partition B type
+ */
+enum boot_conf_type {
+	SYSLINUX_CONF_DEFAULT	= 0,
+	SYSLINUX_CONF_ROLLBACK	= 1,
+	SYSLINUX_CONF_A		= 2,
+	SYSLINUX_CONF_B		= 3,
+};
+
+enum upgrade_type {
+	UPGRADE_NO_NEED	= 0,
+	UPGRADE_DONE	= 1,
+};
+
+static void upgrade_switch_boot_part(int conf_type)
+{
+	char *syslinux_conf = NULL;
+
+	switch (conf_type) {
+	case SYSLINUX_CONF_DEFAULT:
+		syslinux_conf = "extlinux/extlinux.conf";
+		break;
+	case SYSLINUX_CONF_ROLLBACK:
+		syslinux_conf = "extlinux-rollback/extlinux-rollback.conf";
+		break;
+	case SYSLINUX_CONF_A:
+		syslinux_conf = "extlinux-a/extlinux-a.conf";
+		break;
+	case SYSLINUX_CONF_B:
+		syslinux_conf = "extlinux-b/extlinux-b.conf";
+		break;
+	}
+
+	env_set("boot_syslinux_conf", syslinux_conf);
+}
+
+static void swap_boot_conf_type(bool is_switch_conf)
+{
+	int conf_type = env_get_ulong("boot_syslinux_conf_type", 10, 0);
+	int new_conf_type = conf_type;
+
+	/* for non-upgrade cases, just boot existing boot_syslinux */
+	if (!is_switch_conf) {
+		upgrade_switch_boot_part(new_conf_type);
+		return;
+	}
+
+	switch (conf_type) {
+	case SYSLINUX_CONF_A:
+		new_conf_type = SYSLINUX_CONF_B;
+		break;
+	case SYSLINUX_CONF_B:
+		new_conf_type = SYSLINUX_CONF_A;
+		break;
+	case SYSLINUX_CONF_DEFAULT:
+		new_conf_type = SYSLINUX_CONF_ROLLBACK;
+		break;
+	default:
+		new_conf_type = SYSLINUX_CONF_DEFAULT;
+		printf("WARNING: Unknown boot_conf_type %d\n", conf_type);
+	}
+
+	upgrade_switch_boot_part(new_conf_type);
+	env_set_ulong("boot_syslinux_conf_type", new_conf_type);
+	env_save();
+}
+
+static void upgrade_bootcount_variable(void)
+{
+	int upgrade = env_get_ulong("upgrade_available", 10, 0);
+	unsigned long bootcount = bootcount_load();
+	unsigned long bootlimit = env_get_ulong("bootlimit", 10, 0);
+	bool is_switch_conf = false;
+
+	switch (upgrade) {
+	case UPGRADE_DONE:
+		bootcount_store(0);
+		env_set_ulong("upgrade_available", UPGRADE_NO_NEED);
+		env_save();
+		is_switch_conf = true;
+		break;
+	case UPGRADE_NO_NEED:
+		if (bootlimit && bootcount == bootlimit)
+			is_switch_conf = true;
+		else if (bootlimit && bootcount > bootlimit)
+			bootcount_store(0);
+		debug("%s: No upgrade action needed!\n", __func__);
+	}
+
+	swap_boot_conf_type(is_switch_conf);
+}
+#endif
+
 int board_late_init(void)
 {
 	switch ((imx6_src_get_boot_mode() & IMX6_BMODE_MASK) >>
@@ -90,6 +191,10 @@ int board_late_init(void)
 
 #ifdef CONFIG_HW_WATCHDOG
 	hw_watchdog_init();
+#endif
+
+#ifdef CONFIG_BOARD_SPECIFIC_OPTIONS
+	upgrade_bootcount_variable();
 #endif
 
 	return 0;
