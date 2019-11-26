@@ -324,6 +324,31 @@ int fastboot_mmc_get_part_info(const char *part_name,
 	return r;
 }
 
+static void write_raw_raw_image(struct blk_desc *dev_desc, long start,
+				int blksz, void *buffer,
+				unsigned int download_bytes, char *response)
+{
+	lbaint_t blkcnt;
+	lbaint_t blks;
+
+	/* determine number of blocks to write */
+	blkcnt = ((download_bytes + (blksz - 1)) & ~(blksz - 1));
+	blkcnt = blkcnt / blksz;
+
+	puts("Flashing Raw Image\n");
+
+	blks = blk_dwrite(dev_desc, start / blksz, blkcnt, buffer);
+	if (blks != blkcnt) {
+		pr_err("failed writing to device\n");
+		fastboot_fail("failed writing to device", response);
+		return;
+	}
+
+	printf("........ wrote " LBAFU " bytes to 0x%lx\n",
+	       blkcnt * blksz, start);
+	fastboot_okay(NULL, response);
+}
+
 /**
  * fastboot_mmc_flash_write() - Write image to eMMC for fastboot
  *
@@ -337,6 +362,7 @@ void fastboot_mmc_flash_write(const char *cmd, void *download_buffer,
 {
 	struct blk_desc *dev_desc;
 	disk_partition_t info;
+	ulong start_addr;
 
 	dev_desc = blk_get_dev("mmc", CONFIG_FASTBOOT_FLASH_MMC_DEV);
 	if (!dev_desc || dev_desc->type == DEV_TYPE_UNKNOWN) {
@@ -397,8 +423,9 @@ void fastboot_mmc_flash_write(const char *cmd, void *download_buffer,
 #endif
 
 	if (part_get_info_by_name_or_alias(dev_desc, cmd, &info) < 0) {
-		pr_err("cannot find partition: '%s'\n", cmd);
-		fastboot_fail("cannot find partition", response);
+		start_addr = simple_strtol(cmd, NULL, 16);
+		write_raw_raw_image(dev_desc, start_addr, dev_desc->blksz,
+				    download_buffer, download_bytes, response);
 		return;
 	}
 
