@@ -34,7 +34,38 @@
 #endif
 
 /* Default environment */
+#ifndef CONFIG_SPL_BUILD
+#define NAND_BOOTCMD \
+	"nandboot=echo Booting from nand ...; " \
+	"if mtdparts; then " \
+		"echo Starting nand boot ...; " \
+	"else " \
+		"mtdparts default; " \
+	"fi; " \
+	"run ubiargs; " \
+	"nand read ${loadaddr} kernel 0x800000; " \
+	"nand read ${fdt_addr} dtb 0x100000; " \
+	"bootm ${loadaddr} - ${fdt_addr}\0"
+
+#define BOOT_TARGET_DEVICES(func) \
+	func(MMC, mmc, 2) \
+	func(MMC, mmc, 1)
+#include <config_distro_bootcmd.h>
+
+#define MEM_LAYOUT_ENV_SETTINGS \
+	"bootm_size=0x20000000\0" \
+	"fdt_addr_r=0x12100000\0" \
+	"fdt_high=0xffffffff\0" \
+	"initrd_high=0xffffffff\0" \
+	"kernel_addr_r=0x11000000\0" \
+	"pxefile_addr_r=0x17100000\0" \
+	"ramdisk_addr_r=0x12200000\0" \
+	"scriptaddr=0x17000000\0"
+
+/* Default environment */
 #define CONFIG_EXTRA_ENV_SETTINGS \
+	MEM_LAYOUT_ENV_SETTINGS \
+	BOOTENV \
 	"script=boot.scr\0" \
 	"splashpos=m,m\0" \
 	"splashimage=" __stringify(CONFIG_LOADADDR) "\0" \
@@ -43,70 +74,14 @@
 	"fdt_high=0xffffffff\0" \
 	"fdt_addr=" FDT_ADDR "\0" \
 	"boot_fdt=try\0" \
-	"mmcpart=1\0" \
 	"nandroot=ubi0:rootfs rootfstype=ubifs\0" \
-	"mmcautodetect=yes\0" \
-	"mmcargs=setenv bootargs console=${console},${baudrate} " \
-		"root=${mmcroot}\0" \
 	"ubiargs=setenv bootargs console=${console},${baudrate} " \
 		"ubi.mtd=5 root=${nandroot} ${mtdparts}\0" \
-	"loadbootscript=" \
-		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
-	"bootscript=echo Running bootscript from mmc ...; " \
-		"source\0" \
-	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
-	"loadfit=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${fit_image}\0" \
-	"altbootcmd=run recoveryboot\0"\
-	"fitboot=echo Booting FIT image from mmc ...; " \
-		"run mmcargs; " \
-		"bootm ${loadaddr}\0" \
-	"_mmcboot=run mmcargs; " \
-		"run mmcargs; " \
-		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
-			"if run loadfdt; then " \
-				"bootm ${loadaddr} - ${fdt_addr}; " \
-			"else " \
-				"if test ${boot_fdt} = try; then " \
-					"bootm; " \
-				"else " \
-					"echo WARN: Cannot load the DT; " \
-				"fi; " \
-			"fi; " \
-		"else " \
-			"bootm; " \
-		"fi\0" \
-	"mmcboot=echo Booting from mmc ...; " \
-		"if mmc rescan; then " \
-			"if run loadbootscript; then " \
-				"run bootscript; " \
-			"else " \
-				"if run loadfit; then " \
-					"run fitboot; " \
-				"else " \
-					"if run loadimage; then " \
-						"run _mmcboot; " \
-					"fi; " \
-				"fi; " \
-			"fi; " \
-		"fi\0" \
-	"nandboot=echo Booting from nand ...; " \
-		"if mtdparts; then " \
-			"echo Starting nand boot ...; " \
-		"else " \
-			"mtdparts default; " \
-		"fi; " \
-		"run ubiargs; " \
-		"nand read ${loadaddr} kernel 0x800000; " \
-		"nand read ${fdt_addr} dtb 0x100000; " \
-		"bootm ${loadaddr} - ${fdt_addr}\0" \
-	"recoveryboot=if test ${modeboot} = mmcboot; then " \
-			"run mmcboot; " \
-		"else " \
-			"run nandboot; " \
-		"fi\0"
-
-#define CONFIG_BOOTCOMMAND		"run $modeboot"
+	NAND_BOOTCMD \
+	"altbootcmd=" \
+		"setenv boot_syslinux_conf extlinux-rollback/extlinux-rollback.conf;" \
+		"run distro_bootcmd\0"
+#endif
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_MEMTEST_START	0x80000000
