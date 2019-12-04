@@ -48,8 +48,9 @@
 	"bootm ${loadaddr} - ${fdt_addr}\0"
 
 #define BOOT_TARGET_DEVICES(func) \
-	func(MMC, mmc, 2) \
-	func(MMC, mmc, 1)
+	func(MMC, mmc, 0) \
+	func(MMC, mmc, 1) \
+	func(MMC, mmc, 2)
 #include <config_distro_bootcmd.h>
 
 #define MEM_LAYOUT_ENV_SETTINGS \
