@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0+
 /*
+ * Copyright (c) 2020 Amarula Solutions(India)
+ * Copyright (c) 2020 Jagan Teki <jagan@amarulasolutons.com>
  * Copyright (C) 2015 Thomas Chou <thomas@wytron.com.tw>
  */
 
@@ -8,6 +10,66 @@
 #include <dm/device-internal.h>
 #include <errno.h>
 #include <mtd.h>
+#include <linux/log2.h>
+
+int mtd_dread(struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen,
+	      u_char *buf)
+{
+	struct udevice *dev = mtd->dev;
+	const struct mtd_ops *ops = mtd_get_ops(dev);
+
+	if (!ops->read)
+		return -EOPNOTSUPP;
+
+	*retlen = 0;
+	if (from < 0 || from > mtd->size || len > mtd->size - from)
+		return -EINVAL;
+	if (!len)
+		return 0;
+
+	return ops->read(dev, from, len, retlen, buf);
+}
+
+int mtd_derase(struct mtd_info *mtd, struct erase_info *instr)
+{
+	struct udevice *dev = mtd->dev;
+	const struct mtd_ops *ops = mtd_get_ops(dev);
+
+	if (!ops->erase)
+		return -EOPNOTSUPP;
+
+	if (instr->addr > mtd->size || instr->len > mtd->size - instr->addr)
+		return -EINVAL;
+	if (!(mtd->flags & MTD_WRITEABLE))
+		return -EROFS;
+	instr->fail_addr = MTD_FAIL_ADDR_UNKNOWN;
+	if (!instr->len) {
+		instr->state = MTD_ERASE_DONE;
+		return 0;
+	}
+
+	return ops->erase(dev, instr);
+}
+
+int mtd_dwrite(struct mtd_info *mtd, loff_t to, size_t len, size_t *retlen,
+	       const u_char *buf)
+{
+	struct udevice *dev = mtd->dev;
+	const struct mtd_ops *ops = mtd_get_ops(dev);
+
+	if (!ops->write)
+		return -EOPNOTSUPP;
+
+	*retlen = 0;
+	if (to < 0 || to > mtd->size || len > mtd->size - to)
+		return -EINVAL;
+	if (!ops->write || !(mtd->flags & MTD_WRITEABLE))
+		return -EROFS;
+	if (!len)
+		return 0;
+
+	return ops->write(dev, to, len, retlen, buf);
+}
 
 /**
  * mtd_probe - Probe the device @dev if not already done
