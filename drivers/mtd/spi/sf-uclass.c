@@ -104,6 +104,117 @@ static int spi_flash_post_bind(struct udevice *dev)
 	return 0;
 }
 
+static int spi_flash_std_read(struct udevice *dev, u32 offset, size_t len,
+			      void *buf)
+{
+	struct spi_flash *flash = dev_get_uclass_priv(dev);
+	struct mtd_info *mtd = &flash->mtd;
+	size_t retlen;
+
+	return log_ret(mtd->_read(mtd, offset, len, &retlen, buf));
+}
+
+static int spi_flash_std_write(struct udevice *dev, u32 offset, size_t len,
+			       const void *buf)
+{
+	struct spi_flash *flash = dev_get_uclass_priv(dev);
+	struct mtd_info *mtd = &flash->mtd;
+	size_t retlen;
+
+	return mtd->_write(mtd, offset, len, &retlen, buf);
+}
+
+static int spi_flash_std_erase(struct udevice *dev, u32 offset, size_t len)
+{
+	struct spi_flash *flash = dev_get_uclass_priv(dev);
+	struct mtd_info *mtd = &flash->mtd;
+	struct erase_info instr;
+
+	if (offset % mtd->erasesize || len % mtd->erasesize) {
+		printf("SF: Erase offset/length not multiple of erase size\n");
+		return -EINVAL;
+	}
+
+	memset(&instr, 0, sizeof(instr));
+	instr.addr = offset;
+	instr.len = len;
+
+	return mtd->_erase(mtd, &instr);
+}
+
+static int spi_flash_std_get_sw_write_prot(struct udevice *dev)
+{
+	struct spi_flash *flash = dev_get_uclass_priv(dev);
+
+	return spi_flash_cmd_get_sw_write_prot(flash);
+}
+
+int spi_flash_std_probe(struct udevice *dev)
+{
+	struct spi_slave *slave = dev_get_parent_priv(dev);
+	struct dm_spi_slave_platdata *plat = dev_get_parent_platdata(dev);
+	struct spi_flash *flash;
+	int ret;
+
+	if (!slave) {
+		printf("SF: Failed to set up slave\n");
+		return -ENODEV;
+	}
+
+	flash = dev_get_uclass_priv(dev);
+	flash->dev = dev;
+	flash->spi = slave;
+	debug("%s: slave=%p, cs=%d\n", __func__, slave, plat->cs);
+
+	/* Claim spi bus */
+	ret = spi_claim_bus(slave);
+	if (ret) {
+		debug("SF: Failed to claim SPI bus: %d\n", ret);
+		return ret;
+	}
+
+	ret = spi_nor_scan(flash);
+	if (ret)
+		goto err_read_id;
+
+	if (IS_ENABLED(CONFIG_SPI_FLASH_MTD))
+		ret = spi_flash_mtd_register(flash);
+
+err_read_id:
+	spi_release_bus(slave);
+	return ret;
+}
+
+static int spi_flash_std_remove(struct udevice *dev)
+{
+	if (IS_ENABLED(CONFIG_SPI_FLASH_MTD))
+		spi_flash_mtd_unregister();
+
+	return 0;
+}
+
+static const struct dm_spi_flash_ops spi_flash_std_ops = {
+	.read = spi_flash_std_read,
+	.write = spi_flash_std_write,
+	.erase = spi_flash_std_erase,
+	.get_sw_write_prot = spi_flash_std_get_sw_write_prot,
+};
+
+static const struct udevice_id spi_flash_std_ids[] = {
+	{ .compatible = "jedec,spi-nor" },
+	{ }
+};
+
+U_BOOT_DRIVER(spi_flash_std) = {
+	.name		= "spi_flash_std",
+	.id		= UCLASS_SPI_FLASH,
+	.of_match	= spi_flash_std_ids,
+	.probe		= spi_flash_std_probe,
+	.remove		= spi_flash_std_remove,
+	.priv_auto_alloc_size = sizeof(struct spi_flash),
+	.ops		= &spi_flash_std_ops,
+};
+
 UCLASS_DRIVER(spi_flash) = {
 	.id		= UCLASS_SPI_FLASH,
 	.name		= "spi_flash",
