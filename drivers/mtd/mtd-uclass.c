@@ -86,6 +86,26 @@ int mtd_probe(struct udevice *dev)
 	return device_probe(dev);
 }
 
+static int mtd_post_bind(struct udevice *dev)
+{
+#if defined(CONFIG_NEEDS_MANUAL_RELOC)
+	const struct mtd_ops *ops = mtd_get_ops(dev);
+	static int reloc_done;
+
+	if (!reloc_done) {
+		if (ops->read)
+			ops->read += gd->reloc_off;
+		if (ops->write)
+			ops->write += gd->reloc_off;
+		if (ops->erase)
+			ops->erase += gd->reloc_off;
+
+		reloc_done++;
+	}
+#endif
+	return 0;
+}
+
 /*
  * Implement a MTD uclass which should include most flash drivers.
  * The uclass private is pointed to mtd_info.
@@ -95,4 +115,5 @@ UCLASS_DRIVER(mtd) = {
 	.id		= UCLASS_MTD,
 	.name		= "mtd",
 	.per_device_auto_alloc_size = sizeof(struct mtd_info),
+	.post_bind	= mtd_post_bind,
 };
