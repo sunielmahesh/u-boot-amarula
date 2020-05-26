@@ -146,13 +146,25 @@ Program the flash::
 Note: for rockchip 32-bit platforms the U-Boot proper image
 is u-boot-dtb.img
 
+SPI
+^^^
+
+Copy SPI boot images into SD card and boot from SD::
+
+        sf probe
+        load mmc 1:1 $kernel_addr_r idbloader-spi.img
+        sf erase 0 +$filesize
+        sf write $kernel_addr_r 0 ${filesize}
+        load mmc 1:1 ${kernel_addr_r} u-boot.itb
+        sf erase 0x40000 +$filesize
+        sf write $kernel_addr_r 0x40000 ${filesize}
+
 TODO
 ----
 
 - Add rockchip idbloader image building
 - Add rockchip TPL image building
-- Document SPI flash boot
 - Add missing SoC's with it boards list
 
 .. Jagan Teki <jagan@amarulasolutions.com>
-.. Sunday 24 May 2020 10:08:41 PM IST
+.. Monday 25 May 2020 12:01:47 AM IST
