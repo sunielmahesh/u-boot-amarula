@@ -31,25 +31,52 @@ out:
 }
 #endif
 
-#if !defined(CONFIG_TPL_BUILD) && defined(CONFIG_SPL_BUILD)
+#if defined(CONFIG_SPL_BUILD)
 
 #include <i2c.h>
+#include <asm/arch-rockchip/cru.h>
+#include <asm/arch-rockchip/grf_rk3399.h>
 
 #define BUS_NUM				2
 #define ROC_RK3399_MEZZ_BAT_ADDR	0x62
+#define PMUGRF_BASE			0xff320000
+#define GPIO0_BASE			0xff720000
 
 enum roc_rk3399_pc_board_type {
        ROC_RK3399_PC,                  /* roc-rk3399-pc base board */
        ROC_RK3399_MEZZ_M2_POE,         /* roc-rk3399-Mezz M.2 PoE */
 };
 
+void board_early_led_setup(void)
+{
+        struct rockchip_gpio_regs * const gpio0 = (void *)GPIO0_BASE;
+        struct rk3399_pmugrf_regs * const pmugrf = (void *)PMUGRF_BASE;
+
+        /* 1. Glow yellow LED, termed as low power */
+        spl_gpio_output(gpio0, GPIO(BANK_A, 2), 1);
+
+        /* 2. Poll for on board power key press */
+        spl_gpio_set_pull(&pmugrf->gpio0_p, GPIO(BANK_A, 5), GPIO_PULL_NORMAL);
+        while (readl(&gpio0->ext_port) & 0x20);
+
+        /* 3. Once 2 done, turn off yellow */
+        spl_gpio_output(gpio0, GPIO(BANK_A, 2), 0);
+}
+
 int board_early_init_f(void)
 {
 	struct udevice *bus, *dev;
 	int ret;
+	struct rockchip_gpio_regs * const gpio0 = (void *)GPIO0_BASE;
 
 	/* default board type */
 	gd->board_type = ROC_RK3399_PC;
+
+	/* Set the low power leds, power key only during POR */
+        if (!strcmp(get_reset_cause(), "POR"))
+                board_early_led_setup();
+	/* 4. Turn on red LED, indicating full power mode */
+        spl_gpio_output(gpio0, GPIO(BANK_B, 5), 1);
 
 	ret = uclass_get_device_by_seq(UCLASS_I2C, BUS_NUM, &bus);
 	if (ret) {
@@ -86,18 +113,3 @@ int board_fit_config_name_match(const char *name)
 #endif
 
 #endif /* CONFIG_SPL_BUILD */
-
-#if defined(CONFIG_TPL_BUILD)
-
-#define GPIO0_BASE      0xff720000
-
-int board_early_init_f(void)
-{
-	struct rockchip_gpio_regs * const gpio0 = (void *)GPIO0_BASE;
-
-	/* Turn on red LED, indicating full power mode */
-	spl_gpio_output(gpio0, GPIO(BANK_B, 5), 1);
-
-	return 0;
-}
-#endif
