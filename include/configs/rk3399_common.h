@@ -28,7 +28,7 @@
 #define CONFIG_SPL_STACK		0xff8effff
 #define CONFIG_SPL_MAX_SIZE		0x30000 - 0x2000
 /*  BSS setup */
-#define CONFIG_SPL_BSS_START_ADDR       0xff8e0000
+#define CONFIG_SPL_BSS_START_ADDR       0xff8a0000
 #define CONFIG_SPL_BSS_MAX_SIZE         0x10000
 #endif
 
