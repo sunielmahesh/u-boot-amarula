@@ -951,6 +951,9 @@ endif
 
 ifeq ($(CONFIG_ARCH_ROCKCHIP)$(CONFIG_SPL),yy)
 ALL-y += u-boot-rockchip.bin
+ifeq ($(CONFIG_SPL_MMC_SUPPORT)$(CONFIG_SPL_SPI_LOAD),yy)
+ALL-y += idbloader-spi.img
+endif
 endif
 
 LDFLAGS_u-boot += $(LDFLAGS_FINAL)
@@ -1438,24 +1441,58 @@ u-boot-with-spl.bin: $(SPL_IMAGE) $(SPL_PAYLOAD) FORCE
 
 ifeq ($(CONFIG_ARCH_ROCKCHIP),y)
 
-# rockchip image type
-ifeq ($(CONFIG_SPL_MMC_SUPPORT),y)
-ROCKCHIP_IMG_TYPE := rksd
-else
-ROCKCHIP_IMG_TYPE := rkspi
-endif
-
+# MMC + SPI
+ifeq ($(CONFIG_SPL_MMC_SUPPORT)$(CONFIG_SPL_SPI_LOAD),yy)
 # TPL + SPL
 ifeq ($(CONFIG_SPL)$(CONFIG_TPL),yy)
-MKIMAGEFLAGS_u-boot-tpl-rockchip.bin = -n $(CONFIG_SYS_SOC) -T $(ROCKCHIP_IMG_TYPE)
+MKIMAGEFLAGS_u-boot-tpl-rockchip.bin = -n $(CONFIG_SYS_SOC) -T rksd
 tpl/u-boot-tpl-rockchip.bin: tpl/u-boot-tpl.bin FORCE
 	$(call if_changed,mkimage)
 idbloader.img: tpl/u-boot-tpl-rockchip.bin spl/u-boot-spl.bin FORCE
 	$(call if_changed,cat)
-else
-MKIMAGEFLAGS_idbloader.img = -n $(CONFIG_SYS_SOC) -T $(ROCKCHIP_IMG_TYPE)
+
+MKIMAGEFLAGS_u-boot-tpl-spi-rockchip.bin = -n $(CONFIG_SYS_SOC) -T rkspi
+tpl/u-boot-tpl-spi-rockchip.bin: tpl/u-boot-tpl.bin FORCE
+	$(call if_changed,mkimage)
+idbloader-spi.img: tpl/u-boot-tpl-spi-rockchip.bin spl/u-boot-spl.bin FORCE
+	$(call if_changed,cat)
+else # SPL
+MKIMAGEFLAGS_idbloader.img = -n $(CONFIG_SYS_SOC) -T rksd
 idbloader.img: spl/u-boot-spl.bin FORCE
 	$(call if_changed,mkimage)
+
+MKIMAGEFLAGS_idbloader-spi.img = -n $(CONFIG_SYS_SOC) -T rkspi
+idbloader-spi.img: spl/u-boot-spl.bin FORCE
+	$(call if_changed,mkimage)
+endif
+# MMC
+else ifeq ($(CONFIG_SPL_MMC_SUPPORT),y)
+# TPL + SPL
+ifeq ($(CONFIG_SPL)$(CONFIG_TPL),yy)
+MKIMAGEFLAGS_u-boot-tpl-rockchip.bin = -n $(CONFIG_SYS_SOC) -T rksd
+tpl/u-boot-tpl-rockchip.bin: tpl/u-boot-tpl.bin FORCE
+	$(call if_changed,mkimage)
+idbloader.img: tpl/u-boot-tpl-rockchip.bin spl/u-boot-spl.bin FORCE
+	$(call if_changed,cat)
+else # SPL
+MKIMAGEFLAGS_idbloader.img = -n $(CONFIG_SYS_SOC) -T rksd
+idbloader.img: spl/u-boot-spl.bin FORCE
+	$(call if_changed,mkimage)
+endif
+# SPI
+else ifeq ($(CONFIG_SPL_SPI_LOAD),y)
+# TPL + SPL
+ifeq ($(CONFIG_SPL)$(CONFIG_TPL),yy)
+MKIMAGEFLAGS_u-boot-tpl-rockchip.bin = -n $(CONFIG_SYS_SOC) -T rkspi
+tpl/u-boot-tpl-rockchip.bin: tpl/u-boot-tpl.bin FORCE
+	$(call if_changed,mkimage)
+idbloader.img: tpl/u-boot-tpl-rockchip.bin spl/u-boot-spl.bin FORCE
+	$(call if_changed,cat)
+else # SPL
+MKIMAGEFLAGS_idbloader.img = -n $(CONFIG_SYS_SOC) -T rkspi
+idbloader.img: spl/u-boot-spl.bin FORCE
+	$(call if_changed,mkimage)
+endif
 endif
 
 ifeq ($(CONFIG_ARM64),)
@@ -2030,7 +2067,7 @@ CLEAN_FILES += include/bmp_logo.h include/bmp_logo_data.h tools/version.h \
 	       boot* u-boot* MLO* SPL System.map fit-dtb.blob* \
 	       u-boot-ivt.img.log u-boot-dtb.imx.log SPL.log u-boot.imx.log \
 	       lpc32xx-* bl31.c bl31.elf bl31_*.bin image.map tispl.bin* \
-	       idbloader.img flash.bin flash.log defconfig
+	       idbloader.img idbloader-spi.img flash.bin flash.log
 
 # Directories & files removed with 'make mrproper'
 MRPROPER_DIRS  += include/config include/generated spl tpl \
