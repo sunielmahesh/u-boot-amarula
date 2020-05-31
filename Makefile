@@ -1439,10 +1439,10 @@ u-boot-with-spl.bin: $(SPL_IMAGE) $(SPL_PAYLOAD) FORCE
 ifeq ($(CONFIG_ARCH_ROCKCHIP),y)
 
 # rockchip image type
-ifeq ($(CONFIG_SPL_SPI_LOAD),y)
-ROCKCHIP_IMG_TYPE := rkspi
-else
+ifeq ($(CONFIG_SPL_MMC_SUPPORT),y)
 ROCKCHIP_IMG_TYPE := rksd
+else
+ROCKCHIP_IMG_TYPE := rkspi
 endif
 
 # TPL + SPL
