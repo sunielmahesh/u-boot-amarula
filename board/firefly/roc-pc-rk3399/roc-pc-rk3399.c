@@ -37,6 +37,7 @@ out:
 #include <spl.h>
 
 #ifdef CONFIG_SPL_GPIO_SUPPORT
+#include <env.h>
 #include <spl_gpio.h>
 #include <asm/arch-rockchip/cru.h>
 #include <asm/arch-rockchip/grf_rk3399.h>
@@ -57,8 +58,16 @@ static void led_setup(void)
 {
 	struct rockchip_gpio_regs * const gpio0 = (void *)GPIO0_BASE;
 	struct rk3399_pmugrf_regs * const pmugrf = (void *)PMUGRF_BASE;
+	bool press_pwr_key = false;
 
-	if (!strcmp(get_reset_cause(), "POR")) {
+#ifdef CONFIG_SPL_ENV_SUPPORT
+	env_init();
+	env_load();
+	if (env_get_yesno("pwr_key") == 1)
+		press_pwr_key = true;
+#endif
+
+	if (press_pwr_key && !strcmp(get_reset_cause(), "POR")) {
 		spl_gpio_output(gpio0, GPIO(BANK_A, 2), 1);
 
 		spl_gpio_set_pull(&pmugrf->gpio0_p, GPIO(BANK_A, 5),
