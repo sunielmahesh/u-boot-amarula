@@ -8,7 +8,6 @@
 #include <log.h>
 #include <asm/arch-rockchip/periph.h>
 #include <power/regulator.h>
-#include <spl_gpio.h>
 #include <asm/io.h>
 #include <asm/arch-rockchip/gpio.h>
 
@@ -32,17 +31,32 @@ out:
 }
 #endif
 
-#if defined(CONFIG_TPL_BUILD)
+#if defined(CONFIG_SPL_BUILD)
+
+#ifdef CONFIG_SPL_BOARD_INIT
+#include <spl.h>
+
+#ifdef CONFIG_SPL_GPIO_SUPPORT
+#include <spl_gpio.h>
 
 #define GPIO0_BASE      0xff720000
 
-int board_early_init_f(void)
+static void led_setup(void)
 {
 	struct rockchip_gpio_regs * const gpio0 = (void *)GPIO0_BASE;
 
-	/* Turn on red LED, indicating full power mode */
 	spl_gpio_output(gpio0, GPIO(BANK_B, 5), 1);
-
-	return 0;
 }
+#endif /* CONFIG_SPL_GPIO_SUPPORT */
+
+void spl_board_init(void)
+{
+#ifdef CONFIG_SPL_GPIO_SUPPORT
+	led_setup();
 #endif
+
+	preloader_console_init();
+}
+
+#endif /* CONFIG_SPL_BOARD_INIT */
+#endif /* CONFIG_SPL_BUILD */
