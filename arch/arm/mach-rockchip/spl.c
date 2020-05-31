@@ -148,7 +148,6 @@ void board_init_f(ulong dummy)
 		return;
 	}
 #endif
-	preloader_console_init();
 }
 
 #ifdef CONFIG_SPL_LOAD_FIT
