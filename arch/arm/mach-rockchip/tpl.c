@@ -84,8 +84,14 @@ void board_init_f(ulong dummy)
 	}
 }
 
+__weak void rk_spl_board_init(void)
+{
+}
+
 void spl_board_init(void)
 {
+	rk_spl_board_init();
+
 #ifdef CONFIG_TPL_BANNER_PRINT
 	printascii("\nU-Boot TPL " PLAIN_VERSION " (" U_BOOT_DATE " - " \
 				U_BOOT_TIME ")\n");
