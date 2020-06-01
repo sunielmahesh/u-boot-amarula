@@ -1682,6 +1682,7 @@ config ARCH_ROCKCHIP
 	select SPL_DM if SPL
 	select SYS_MALLOC_F
 	select SYS_THUMB_BUILD if !ARM64
+	select TPL_BOARD_INIT
 	imply ADC
 	imply CMD_DM
 	imply DEBUG_UART_BOARD_INIT

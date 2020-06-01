@@ -65,10 +65,6 @@ void board_init_f(ulong dummy)
 	 * printascii("string");
 	 */
 	debug_uart_init();
-#ifdef CONFIG_TPL_BANNER_PRINT
-	printascii("\nU-Boot TPL " PLAIN_VERSION " (" U_BOOT_DATE " - " \
-				U_BOOT_TIME ")\n");
-#endif
 #endif
 	ret = spl_early_init();
 	if (ret) {
@@ -86,6 +82,14 @@ void board_init_f(ulong dummy)
 		printf("DRAM init failed: %d\n", ret);
 		return;
 	}
+}
+
+void spl_board_init(void)
+{
+#ifdef CONFIG_TPL_BANNER_PRINT
+	printascii("\nU-Boot TPL " PLAIN_VERSION " (" U_BOOT_DATE " - " \
+				U_BOOT_TIME ")\n");
+#endif
 }
 
 int board_return_to_bootrom(struct spl_image_info *spl_image,
