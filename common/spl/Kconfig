@@ -1469,6 +1469,20 @@ config TPL_SPI_FLASH_SUPPORT
 	  Enable support for using SPI flash in TPL. See SPL_SPI_FLASH_SUPPORT
 	  for details.
 
+if TPL_SPI_FLASH_SUPPORT
+
+config TPL_SPI_FLASH_TINY
+	bool "Enable low footprint TPL SPI Flash support"
+	depends on !SPI_FLASH_BAR
+	default y if SPI_FLASH
+	help
+	 Enable lightweight SPL SPI Flash support that supports just reading
+	 data/images from flash. No support to write/erase flash. Enable
+	 this if you have SPL size limitations and don't need full
+	 fledged SPI flash support.
+
+endif # TPL_SPI_FLASH_SUPPORT
+
 config TPL_SPI_LOAD
 	bool "Support loading from SPI flash"
 	depends on TPL_SPI_FLASH_SUPPORT
