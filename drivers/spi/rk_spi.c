@@ -42,7 +42,11 @@ struct rockchip_spi_params {
 
 struct rockchip_spi_platdata {
 #if CONFIG_IS_ENABLED(OF_PLATDATA)
+#ifdef CONFIG_ROCKCHIP_RK3399
+	struct dtd_rockchip_rk3399_spi of_plat;
+#else
 	struct dtd_rockchip_rk3288_spi of_plat;
+#endif
 #endif
 	s32 frequency;		/* Default clock frequency, -1 for none */
 	fdt_addr_t base;
@@ -177,7 +181,11 @@ static void spi_cs_deactivate(struct udevice *dev, uint cs)
 static int conv_of_platdata(struct udevice *dev)
 {
 	struct rockchip_spi_platdata *plat = dev->platdata;
+#ifdef CONFIG_ROCKCHIP_RK3399
+	struct dtd_rockchip_rk3399_spi *dtplat = &plat->of_plat;
+#else
 	struct dtd_rockchip_rk3288_spi *dtplat = &plat->of_plat;
+#endif
 	struct rockchip_spi_priv *priv = dev_get_priv(dev);
 	int ret;
 
@@ -555,7 +563,11 @@ static const struct udevice_id rockchip_spi_ids[] = {
 
 U_BOOT_DRIVER(rockchip_spi) = {
 #if CONFIG_IS_ENABLED(OF_PLATDATA)
+#ifdef CONFIG_ROCKCHIP_RK3399
+	.name	= "rockchip_rk3399_spi",
+#else
 	.name	= "rockchip_rk3288_spi",
+#endif
 #else
 	.name	= "rockchip_spi",
 #endif
