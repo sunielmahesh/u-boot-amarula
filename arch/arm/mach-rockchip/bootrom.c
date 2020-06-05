@@ -4,6 +4,7 @@
  */
 
 #include <common.h>
+#include <log.h>
 #include <hang.h>
 #include <asm/arch-rockchip/bootrom.h>
 #include <asm/arch-rockchip/boot_mode.h>
@@ -26,7 +27,7 @@ static void _back_to_bootrom(enum rockchip_bootrom_cmd brom_cmd)
 void back_to_bootrom(enum rockchip_bootrom_cmd brom_cmd)
 {
 #if CONFIG_IS_ENABLED(LIBCOMMON_SUPPORT)
-	puts("Returning to boot ROM...\n");
+	debug("Returning to boot ROM...\n");
 #endif
 	_back_to_bootrom(brom_cmd);
 }

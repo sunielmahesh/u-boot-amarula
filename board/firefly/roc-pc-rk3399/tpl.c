@@ -14,6 +14,7 @@
 #define PMUGRF_BASE	0xff320000
 #define GPIO0_BASE      0xff720000
 
+#if 0
 #ifdef CONFIG_TPL_BOARD_INIT
 
 /**
@@ -56,4 +57,5 @@ void rk_spl_board_init(void)
 	led_setup();
 }
 
+#endif /* CONFIG_TPL_BOARD_INIT */
 #endif /* CONFIG_TPL_BOARD_INIT */
