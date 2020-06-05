@@ -273,5 +273,7 @@ void __weak spl_board_init(void)
 	if (regulators_enable_boot_on(false))
 		debug("%s: Cannot enable boot on regulator\n", __func__);
 #endif
+
+	preloader_console_init();
 }
 #endif
