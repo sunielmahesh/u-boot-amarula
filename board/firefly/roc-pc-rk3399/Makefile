@@ -6,6 +6,8 @@
 
 ifdef CONFIG_TPL_BUILD
 obj-y	+= tpl.o
+else ifdef CONFIG_SPL_BUILD
+obj-y	+= spl.o
 else
 obj-y	+= roc-pc-rk3399.o
 endif
