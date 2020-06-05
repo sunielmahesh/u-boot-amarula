@@ -241,7 +241,7 @@ static void rk3399_force_power_on_reset(void)
 }
 #endif
 
-void spl_board_init(void)
+void __weak spl_board_init(void)
 {
 #if defined(SPL_GPIO_SUPPORT)
 	struct rockchip_cru *cru = rockchip_get_cru();
