@@ -52,6 +52,7 @@ struct rockchip_spi_platdata {
 	fdt_addr_t base;
 	uint deactivate_delay_us;	/* Delay to wait after deactivate */
 	uint activate_delay_us;		/* Delay to wait after activate */
+	bool master_manages_fifo;
 };
 
 struct rockchip_spi_priv {
@@ -63,6 +64,7 @@ struct rockchip_spi_priv {
 	unsigned int speed_hz;
 	unsigned int last_speed_hz;
 	uint input_rate;
+	bool master_manages_fifo;
 };
 
 #define SPI_FIFO_DEPTH		32
@@ -195,6 +197,7 @@ static int conv_of_platdata(struct udevice *dev)
 	if (ret < 0)
 		return ret;
 	dev->req_seq = 0;
+	plat->master_manages_fifo = true;
 
 	return 0;
 }
@@ -205,6 +208,8 @@ static int rockchip_spi_ofdata_to_platdata(struct udevice *bus)
 #if !CONFIG_IS_ENABLED(OF_PLATDATA)
 	struct rockchip_spi_platdata *plat = dev_get_platdata(bus);
 	struct rockchip_spi_priv *priv = dev_get_priv(bus);
+	const struct rockchip_spi_params * const data =
+		(void *)dev_get_driver_data(bus);
 	int ret;
 
 	plat->base = dev_read_addr(bus);
@@ -216,6 +221,7 @@ static int rockchip_spi_ofdata_to_platdata(struct udevice *bus)
 		return ret;
 	}
 
+	plat->master_manages_fifo = data->master_manages_fifo;
 	plat->frequency =
 		dev_read_u32_default(bus, "spi-max-frequency", 50000000);
 	plat->deactivate_delay_us =
@@ -272,6 +278,7 @@ static int rockchip_spi_probe(struct udevice *bus)
 		return ret;
 #endif
 	priv->regs = (struct rockchip_spi *)plat->base;
+	priv->master_manages_fifo = plat->master_manages_fifo;
 
 	priv->last_transaction_us = timer_get_us();
 	priv->max_freq = plat->frequency;
@@ -361,8 +368,6 @@ static inline int rockchip_spi_16bit_reader(struct udevice *dev,
 					    u8 **din, int *len)
 {
 	struct udevice *bus = dev->parent;
-	const struct rockchip_spi_params * const data =
-		(void *)dev_get_driver_data(bus);
 	struct rockchip_spi_priv *priv = dev_get_priv(bus);
 	struct rockchip_spi *regs = priv->regs;
 	const u32 saved_ctrlr0 = readl(&regs->ctrlr0);
@@ -382,7 +387,7 @@ static inline int rockchip_spi_16bit_reader(struct udevice *dev,
 	 * we the allow largest possible chunk size that can be
 	 * represented in CTRLR1.
 	 */
-	if (data && data->master_manages_fifo)
+	if (priv->master_manages_fifo)
 		max_chunk_size = ROCKCHIP_SPI_MAX_TRANLEN;
 
 	// rockchip_spi_configure(dev, mode, size)
