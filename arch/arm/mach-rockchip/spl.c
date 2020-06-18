@@ -150,6 +150,16 @@ void board_init_f(ulong dummy)
 	preloader_console_init();
 }
 
+__weak void rk_spl_board_init(void)
+{
+}
+
+void spl_board_init(void)
+{
+	/* board specific spl init */
+	rk_spl_board_init();
+}
+
 #ifdef CONFIG_SPL_LOAD_FIT
 int __weak board_fit_config_name_match(const char *name)
 {

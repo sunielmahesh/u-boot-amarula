@@ -104,7 +104,7 @@ static int phycore_init(void)
 }
 #endif
 
-void spl_board_init(void)
+void rk_spl_board_init(void)
 {
 #if !defined(CONFIG_SPL_OF_PLATDATA)
 	int ret;

@@ -1679,6 +1679,7 @@ config ARCH_ROCKCHIP
 	select ENABLE_ARM_SOC_BOOT0_HOOK
 	select OF_CONTROL
 	select SPI
+	select SPL_BOARD_INIT if SPL
 	select SPL_DM if SPL
 	select SYS_MALLOC_F
 	select SYS_THUMB_BUILD if !ARM64

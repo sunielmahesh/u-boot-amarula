@@ -31,7 +31,7 @@ static int setup_led(void)
 	return 0;
 }
 
-void spl_board_init(void)
+void rk_spl_board_init(void)
 {
 	int ret;
 
