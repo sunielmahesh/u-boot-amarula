@@ -408,8 +408,7 @@ int rk_vop_bind(struct udevice *dev)
 {
 	struct video_uc_platdata *plat = dev_get_uclass_platdata(dev);
 
-	plat->size = 4 * (CONFIG_VIDEO_ROCKCHIP_MAX_XRES *
-			  CONFIG_VIDEO_ROCKCHIP_MAX_YRES);
-
+	plat->size = VIDEO_BPP32 * (CONFIG_VIDEO_ROCKCHIP_MAX_XRES *
+					CONFIG_VIDEO_ROCKCHIP_MAX_YRES);
 	return 0;
 }
