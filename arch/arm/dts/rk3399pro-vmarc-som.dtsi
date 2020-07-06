@@ -42,6 +42,11 @@
 	snps,reset-gpio = <&gpio3 RK_PB7 GPIO_ACTIVE_LOW>;
 };
 
+&hdmi {
+	pinctrl-names = "default";
+	pinctrl-0 = <&hdmi_cec>;
+};
+
 &hym8563 {
 	interrupt-parent = <&gpio4>;
 	interrupts = <RK_PD6 IRQ_TYPE_LEVEL_LOW>;
