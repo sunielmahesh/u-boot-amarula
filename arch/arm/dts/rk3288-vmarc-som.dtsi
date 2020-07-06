@@ -230,13 +230,16 @@
 	};
 };
 
-&io_domains {
-	bb-supply = <&vcc_io>;
-	flash0-supply = <&vccio_flash>;
-	gpio1830-supply = <&vcc_18>;
-	gpio30-supply = <&vcc_io>;
-	sdcard-supply = <&vccio_sd>;
-	status = "okay";
+&grf {
+	io_domains {
+		compatible = "rockchip,rk3288-io-voltage-domain";
+		bb-supply = <&vcc_io>;
+		flash0-supply = <&vccio_flash>;
+		gpio1830-supply = <&vcc_18>;
+		gpio30-supply = <&vcc_io>;
+		sdcard-supply = <&vccio_sd>;
+		status = "okay";
+	};
 };
 
 &pinctrl {
