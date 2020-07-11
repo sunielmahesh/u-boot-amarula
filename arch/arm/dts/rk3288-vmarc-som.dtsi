@@ -294,6 +294,7 @@
 };
 
 &usb_otg {
+	dr_mode = "host";
 	status = "okay";
 };
 
